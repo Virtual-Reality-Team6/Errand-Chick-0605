@@ -6,11 +6,13 @@ public class Portal : MonoBehaviour
 {
   public string transferMapName;
   private Player thePlayer;
-  // Start is called before the first frame update
+  
   void Start()
   {
     if (thePlayer == null)
     thePlayer = FindObjectOfType<Player>();
+    
+    Debug.Log("시작된겨 뭐여");
   }
   
   private void OnTriggerEnter2D(Collider2D collision)
@@ -19,6 +21,7 @@ public class Portal : MonoBehaviour
     {
       thePlayer.currentMapName = transferMapName;
       SceneManager.LoadScene(transferMapName);
+      Debug.Log("시방 뭐여");
     }
   }
 }

@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Floor
   - NPC
+  - Portal
   layers:
   - Default
   - TransparentFX

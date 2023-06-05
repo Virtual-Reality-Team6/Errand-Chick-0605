@@ -11,6 +11,7 @@ public class NPC : MonoBehaviour
 
     public int interactionIndex;
     public string[] talkData;
+    
     public Image talkImg;
     public Text talkText;
 
@@ -57,9 +58,28 @@ public class NPC : MonoBehaviour
     void DisplayNPCTalk(int talkDataIndex)
     {
         talkText.text = talkData[talkDataIndex];
-        float widthInPixels = talkData[talkDataIndex].Length * 40;
+        int spaceCount = CountSpaces(talkData[talkDataIndex]);
+        int nonSpaceCount = talkData[talkDataIndex].Length - spaceCount;
+
+        Debug.Log("Space Count: " + spaceCount);
+        Debug.Log("Non-Space Count: " + nonSpaceCount);
+
+        float widthInPixels = nonSpaceCount * 60 + spaceCount * 9;
         talkImg.rectTransform.sizeDelta = new Vector2(widthInPixels, talkImg.rectTransform.sizeDelta.y);
         talkImg.gameObject.SetActive(true);
+    }
+
+    private int CountSpaces(string text)
+    {
+        int count = 0;
+        for (int i = 0; i < text.Length; i++)
+        {
+            if (text[i] == ' ')
+            {
+                count++;
+            }
+        }
+        return count;
     }
 
     IEnumerator Talk()

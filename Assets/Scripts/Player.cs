@@ -40,6 +40,8 @@ public class Player : MonoBehaviour
     public RectTransform memoUIGroup;
     public RectTransform stampUIGroup;
     public RectTransform menuUIGroup;
+
+    public SceneLoader sceneLoader;
     
     void Awake()
     {
@@ -153,6 +155,14 @@ public class Player : MonoBehaviour
     {
         if(collision.gameObject.tag == "Floor"){
             isJump = false;
+        }
+        if(collision.gameObject.CompareTag("Portal")){
+            if(sceneLoader == null){
+                Debug.Log("sceneLoader가 null");
+            }
+            else{
+                sceneLoader.LoadScene("Market");
+            }
         }
     }
 
