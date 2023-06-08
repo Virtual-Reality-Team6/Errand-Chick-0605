@@ -22,7 +22,7 @@ public class Player : MonoBehaviour
     public int score;
 
     bool isJump;
-    bool isShop;
+    bool isInteraction;
     bool seeMemo;
     bool seeStamp;
     bool seeMenu = false;
@@ -48,6 +48,16 @@ public class Player : MonoBehaviour
         rigid = GetComponent<Rigidbody>();
         anim = GetComponentInChildren<Animator>();
         //PlayerPrefs.SetInt("MaxScore", 112500);
+    }
+
+    void FreezeRotation()
+    {
+        rigid.angularVelocity = Vector3.zero;
+    }
+
+    void FixedUpdate()
+    {
+        FreezeRotation();
     }
     
     void Update()
@@ -90,7 +100,7 @@ public class Player : MonoBehaviour
 
     void Jump()
     {
-        if (spaceDown && !isJump && !isShop){
+        if (spaceDown && !isJump && !isInteraction){
             rigid.AddForce(Vector3.up * jumpUp,  ForceMode.Impulse);
             anim.SetBool("Jump", true);
             anim.SetTrigger("Jump");
@@ -104,7 +114,7 @@ public class Player : MonoBehaviour
             if(nearObject.tag == "NPC"){
                 NPC npc = nearObject.GetComponent<NPC>();
                 npc.Enter(this);
-                isShop = true;
+                isInteraction = true;
             }
         }
     }
@@ -158,10 +168,10 @@ public class Player : MonoBehaviour
         }
         if(collision.gameObject.CompareTag("Portal")){
             if(sceneLoader == null){
-                Debug.Log("sceneLoader가 null");
+                Debug.Log("sceneLoader is null");
             }
             else{
-                sceneLoader.LoadScene("Market");
+                sceneLoader.LoadScene();
             }
         }
     }
@@ -175,7 +185,7 @@ public class Player : MonoBehaviour
         if(other.tag == "NPC"){
             NPC npc = nearObject.GetComponent<NPC>();
             npc.Exit();
-            isShop = false;
+            isInteraction = false;
             nearObject = null;
         }
     }

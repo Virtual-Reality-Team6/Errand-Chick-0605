@@ -11,9 +11,19 @@ public class NPC : MonoBehaviour
 
     public int interactionIndex;
     public string[] talkData;
+    public string[] questionData;
+    public string[] answerData;
+    public int currentQuestionIndex;
     
-    public Image talkImg;
-    public Text talkText;
+    public Image outsideTalkImg;
+    public Text outsideTalkText;
+
+    public Image QuestionImg;
+    public Text QuestionText;
+    public Button correctAnswerButton;
+    public Text correctButtonText;
+    public Button wrongAnswerButton;
+    public Text wrongButtonText;
 
     Player enterPlayer;
     public float rotationSpeed = 5f;
@@ -21,10 +31,18 @@ public class NPC : MonoBehaviour
     public void Enter(Player player)
     {
         enterPlayer = player;
-        uiGroup.anchoredPosition = Vector3.down * 1000;
-        RotateTowardsPlayer();
-        interactionCam.SetActive(true);
-        gameCam.SetActive(false);
+        if(enterPlayer.iscompletedStamp[interactionIndex]){
+            Exit();
+        }
+        else{
+            outsideTalkImg.gameObject.SetActive(false);
+            uiGroup.anchoredPosition = Vector3.down * 1000;
+            RotateTowardsPlayer();
+            interactionCam.SetActive(true);
+            gameCam.SetActive(false);
+            currentQuestionIndex = 0;
+            setUI(currentQuestionIndex);
+        }
     }
 
     private void RotateTowardsPlayer()
@@ -34,19 +52,48 @@ public class NPC : MonoBehaviour
         transform.rotation = targetRotation;
     }
 
+    private void setUI(int index)
+    {
+        QuestionText.text = questionData[index];
+        correctButtonText.text = answerData[index*2];
+        wrongButtonText.text = answerData[index*2+1];
+
+        QuestionImg.rectTransform.sizeDelta = new Vector2(CalculateImgWidth(QuestionText.text), QuestionImg.rectTransform.sizeDelta.y);
+
+        RectTransform correctButtonRect = correctAnswerButton.GetComponent<RectTransform>();
+        correctButtonRect.sizeDelta = new Vector2(CalculateImgWidth(correctButtonText.text), correctButtonRect.sizeDelta.y);
+        
+        RectTransform wrongButtonRect = wrongAnswerButton.GetComponent<RectTransform>();
+        wrongButtonRect.sizeDelta = new Vector2(CalculateImgWidth(wrongButtonText.text), wrongButtonRect.sizeDelta.y);
+    }
+
     public void Exit()
     {
         uiGroup.anchoredPosition = Vector3.zero;
         interactionCam.SetActive(false);
         gameCam.SetActive(true);
+        if(enterPlayer != null) StartCoroutine(ShowImageForDuration(2f));
+    }
+
+    private IEnumerator ShowImageForDuration(float duration)
+    {
+        outsideTalkImg.gameObject.SetActive(true);
+        yield return new WaitForSeconds(duration);
+        outsideTalkImg.gameObject.SetActive(false);
     }
 
     public void CorrectAnswerTalk()
     {
-        enterPlayer.iscompletedStamp[interactionIndex] = true;
-        Exit();
-        DisplayNPCTalk(0);
-        enterPlayer.Stamp();
+        if(currentQuestionIndex + 1 == questionData.Length){
+            enterPlayer.iscompletedStamp[interactionIndex] = true;
+            Exit();
+            DisplayNPCTalk(0);
+            enterPlayer.Stamp();
+        }
+        else{
+            currentQuestionIndex++;
+            setUI(currentQuestionIndex);
+        }
     }
 
     public void UncorrectAnswerTalk()
@@ -57,16 +104,19 @@ public class NPC : MonoBehaviour
 
     void DisplayNPCTalk(int talkDataIndex)
     {
-        talkText.text = talkData[talkDataIndex];
-        int spaceCount = CountSpaces(talkData[talkDataIndex]);
-        int nonSpaceCount = talkData[talkDataIndex].Length - spaceCount;
+        outsideTalkText.text = talkData[talkDataIndex];
+        float widthInPixels = CalculateImgWidth(outsideTalkText.text);
+        outsideTalkImg.rectTransform.sizeDelta = new Vector2(widthInPixels, outsideTalkImg.rectTransform.sizeDelta.y);
+        outsideTalkImg.gameObject.SetActive(true);
+    }
 
-        Debug.Log("Space Count: " + spaceCount);
-        Debug.Log("Non-Space Count: " + nonSpaceCount);
+    private float CalculateImgWidth(string talkText)
+    {
+        int spaceCount = CountSpaces(talkText);
+        int nonSpaceCount = talkText.Length - spaceCount;
 
         float widthInPixels = nonSpaceCount * 60 + spaceCount * 9;
-        talkImg.rectTransform.sizeDelta = new Vector2(widthInPixels, talkImg.rectTransform.sizeDelta.y);
-        talkImg.gameObject.SetActive(true);
+        return widthInPixels;
     }
 
     private int CountSpaces(string text)
@@ -80,12 +130,5 @@ public class NPC : MonoBehaviour
             }
         }
         return count;
-    }
-
-    IEnumerator Talk()
-    {
-        talkText.text = talkData[1];
-        yield return new WaitForSeconds(2f);
-        talkText.text = talkData[0];
     }
 }
